@@ -3,6 +3,8 @@ import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { z } from "zod";
+import { useUser } from "../context/UserContext";
+import { useRouter } from "next/navigation";
 
 const RegisterSchema = z.object({
   email: z.string().email(),
@@ -21,6 +23,8 @@ const Form = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [password, setPassword] = useState<string>("");
   const [variant, setVariant] = useState<"register" | "login">("login");
+  const { setUserName, setSession } = useUser();
+  const router = useRouter();
 
   function toggleVariant() {
     if (variant === "login") {
@@ -56,6 +60,12 @@ const Form = () => {
           }
         } else {
           const result = await axios.post("/api/login", { email, password });
+          if (result.status === 200) {
+            console.log(result);
+            setUserName(result.data.name);
+            setSession(result.data.session);
+            router.push("/dashboard");
+          }
         }
       } catch (error: any) {
         if (error.response && error.response.status === 400) {
